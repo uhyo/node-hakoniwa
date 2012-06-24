@@ -24,8 +24,15 @@ class Hex
 		# HTMLのtemp
 		"<img class='hex' src='#{gameconfig.html.imagedir}#{param.src}'>"
 
-exports.Position=Position
-exports.Hex=Hex
-exports.lands=lands=
+module.exports=lands=
+	Position:Position
+	Hex:Hex
+
 	Sea:class extends Hex
 		name:"海"
+		html:->
+			@rawhtml {
+				src:"land0.gif"
+				title:"海"
+				desc:""
+			}

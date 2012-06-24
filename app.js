@@ -25,6 +25,9 @@ files.forEach(function(filename){
 	});
 });
 var app=express.createServer();
+app.get('/images/*',function(req,res){
+	res.sendfile("images/"+req.params[0]);
+});
 app.get('/sight/:id',function(req,res){
 	gameprocess.emit("sight",req.params.id,function(html){
 		res.contentType("text/html");

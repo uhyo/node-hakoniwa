@@ -33,6 +33,6 @@ exports.makeNewIsland=->
 	# 地形を作る
 	for y in [0...result.land.height]
 		for x in [0...result.land.width]
-			land.set x,y,new lands.lands.Sea
+			land.set x,y,new lands.Sea
 	result
 
