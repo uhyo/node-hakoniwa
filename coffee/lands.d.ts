@@ -1,14 +1,10 @@
-export class Position{
-	private x:number;
-	private y:number;
-	constructor(x:number,y:number);
-}
+import islands=module("../ts/islands");
 export class Hex{
-	position:Position;
 	name:string;
 
 	constructor();
 	setPosition(x:number,y:number):void;
+	setPosition(pos:islands.Position):void;
 	html(owner:bool):string;
 	private rawhtml(param:{
 		src:string;
