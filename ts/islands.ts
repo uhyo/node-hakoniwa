@@ -137,7 +137,8 @@ export class LandArea{
 			pos=new Position(arg1,arg2);
 			distance=arg3, cond=arg4;
 		}
-		if(!(cond instanceof Function)){
+		// もっときれいな書き方は?
+		if(cond.prototype instanceof lands.Hex || cond===lands.Hex){
 			cond=((con2:any)=>{
 				return (hex:lands.Hex)=>{
 					return hex instanceof con2;
