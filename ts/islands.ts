@@ -148,7 +148,11 @@ export class LandArea{
 		var routes=this.listAround(distance);
 		//数えるぞ!
 		return routes.fromEach(pos).filter((pos)=>{
-			return cond(this.get(pos));
+			var hex:lands.Hex = this.inArea(pos) ? this.get(pos) : ((hex:lands.Hex)=>{
+				hex.setPosition(pos);
+				return hex
+			})(new (<any>lands).Sea());
+			return cond(hex);
 		}).length;
 	}
 }
