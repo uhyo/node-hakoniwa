@@ -125,6 +125,10 @@ export class LandArea{
 			}
 		}
 	}
+	//周囲nHex以内の数をカウント
+	numberAround(distance:number):number{
+		return this.listAround(distance).getRoutes().length;
+	}
 	countAround(x:number,y:number,distance:number,constr:new()=>lands.Hex):number;
 	countAround(pos:Position,distance:number,constr:new()=>lands.Hex):number;
 	countAround(x:number,y:number,distance:number,func:(hex:lands.Hex)=>bool):number;
@@ -150,7 +154,7 @@ export class LandArea{
 		return routes.fromEach(pos).filter((pos)=>{
 			var hex:lands.Hex = this.inArea(pos) ? this.get(pos) : ((hex:lands.Hex)=>{
 				hex.setPosition(pos);
-				return hex
+				return hex;
 			})(new (<any>lands).Sea());
 			return cond(hex);
 		}).length;
@@ -176,6 +180,54 @@ export function makeNewIsland():Island{
 	//8x8で陸地を増殖する
 	for(var i=0;i<120;i++){
 		var x=util.random(8)+cx-3, y=util.random(8)+cy-3;
+		var nonsea=land.countAround(x,y,1,(hex)=>!hex.isSea());
+		//陸地があれば・・・
+		if(nonsea>0){
+			var lan=land.get(x,y);
+			if(lan.is(las.Waste)){
+				land.set(x,y,new las.Plains);
+			}else if(lan.is(las.Shoal)){
+					land.set(x,y,new las.Waste);
+			}else if(lan.is(las.Sea)){
+				land.set(x,y,new las.Shoal);
+			}
+		}
+	}
+	//森を作る
+	var count=0;
+	while(count<4){
+		var x=util.random(4)+cx-1, y=util.random(4)+cy-1;
+
+		if(!land.get(x,y).is(las.Forest)){
+			var forest=new las.Forest;
+			forest.value=5;	//木の本数
+			land.set(x,y,forest);
+			count++;
+		}
+	}
+	//町を作る
+	count=0;
+	while(count<2){
+		var x=util.random(4)+cx-1, y=util.random(4)+cy-1;
+
+		var lan=land.get(x,y);
+		if(!lan.is(las.Forest) && !lan.is(las.Town)){
+			var town=new las.Town;
+			town.population=5;	//人口
+			land.set(x,y,town);
+			count++;
+		}
+	}
+	//山を作る
+	count=0;
+	while(count<1){
+		var x=util.random(4)+cx-1, y=util.random(4)+cy-1;
+
+		var lan=land.get(x,y);
+		if(!lan.is(las.Forest) && !lan.is(las.Town)){
+			land.set(x,y,new las.Mountain);
+			count++;
+		}
 	}
 	return result;
 }

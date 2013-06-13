@@ -29,6 +29,9 @@ class Hex
     isSea:->false   # 海系地形
     isTown:->false  # 街系地形（人口あり）かどうか
     isBase:->false  # ミサイル基地かどうか
+    isMountain:->false # 山かどうか
+    # 一致 コンストラクタをわたして
+    is:(con)->this instanceof con
 # 基本的地形
 # ミサイル基地
 class Base extends Hex
@@ -176,5 +179,15 @@ module.exports=lands=
             @rawhtml {
                 src:"land10.gif"
                 title:"防衛基地"
+                desc:""
+            }
+    # 山
+    Mountain:class extends Hex
+        name:"山"
+        isMountain:->true
+        html:->
+            @rawhtml {
+                src:"land11.gif"
+                title:"山"
                 desc:""
             }

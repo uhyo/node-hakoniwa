@@ -15,6 +15,8 @@ export class Hex{
 	isSea():bool;
 	isTown():bool;
 	isBase():bool;
+	//一致
+	is(con:new()=>Hex):bool;
 }
 export class Base extends Hex{
 	expTable:number[];
