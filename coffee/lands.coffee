@@ -158,6 +158,7 @@ module.exports=lands=
         constructor:->
             super
             @exp=0
+        expTable:[20,60,120,200]
         name:"ミサイル基地"
         html:(owner)->
             if gameconfig.base.hide && !owner
@@ -172,13 +173,13 @@ module.exports=lands=
                     title:"ミサイル基地"
                     desc:"レベル#{@expToLevel @exp}"
                 }
-    # 防衛基地
+    # 防衛施設
     Defence:class extends Hex
-        name:"防衛基地"
+        name:"防衛施設"
         html:->
             @rawhtml {
                 src:"land10.gif"
-                title:"防衛基地"
+                title:"防衛施設"
                 desc:""
             }
     # 山
@@ -191,3 +192,98 @@ module.exports=lands=
                 title:"山"
                 desc:""
             }
+    # 採掘場
+    Mine:class extends Hex
+        name:"採掘場"
+        isMountain:->true
+        html:->
+            @rawhtml {
+                src:"land15.gif"
+                title:"採掘場"
+                desc:"#{@quantity}0#{gameconfig.util.population}規模"
+            }
+    # ミサイル基地
+    SeaBase:class extends Base
+        constructor:->
+            super
+            @exp=0
+        expTable:[50,200]
+        isLand:->false
+        isSea:->true
+        name:"海底基地"
+        html:(owner)->
+            if gameconfig.base.hide && !owner
+                @rawhtml {
+                    src:"land0.gif"
+                    title:"海"
+                    desc:""
+                }
+            else
+                @rawhtml {
+                    src:"land12.gif"
+                    title:"海底基地"
+                    desc:"レベル#{@expToLevel @exp}"
+                }
+    OffshoreOilfield:class extends Hex
+        isLand:->false
+        isSea:->true
+        name:"海底油田"
+        html:->
+            @rawhtml {
+                src:"land16,gif"
+                title:"海底油田"
+                desc:""
+            }
+    Monument:class extends Hex
+        constructor:->
+            super
+            @type=0    #記念碑の種類
+        types:(->
+                [
+                    #0
+                    {
+                        name:"モノリス"
+                        image:"monument0.gif"
+                    },
+                    #1
+                    {
+                        name:"平和記念碑"
+                        image:"monument0.gif"
+                    }
+                    #2
+                    {
+                        name:"戦いの碑"
+                        image:"monument0.gif"
+                    }
+                ]
+               )()
+        name:"記念碑"
+        html:->
+            obj=@types[@type]
+            if obj?
+                @rawhtml {
+                    src:obj.image
+                    title:"記念碑"
+                    desc:obj.name
+                }
+            else
+                @rawhtml {
+                    src:""
+                    title:"記念碑"
+                    desc:""
+                }
+    Haribote:class extends Hex
+        name:"ハリボテ"
+        html:(owner)->
+            if owner
+                @rawhtml {
+                    src:"land10.gif"
+                    title:"ハリボテ"
+                    desc:""
+                }
+            else
+                @rawhtml {
+                    sec:"land10.gif"
+                    title:"防衛施設"
+                    desc:""
+                }
