@@ -18,7 +18,7 @@ export class Island{
 
 
 	constructor(){
-		this.land=new LandArea(gameconfig.island.landwidth, gameconfig.island.landheight);
+		this.land=new LandArea(gameconfig.island.landwidth, gameconfig.island.landheight,this);
 		//初期状態
 		this.food=gameconfig.owings.initialFood;
 		this.money=gameconfig.owings.initialMoney;

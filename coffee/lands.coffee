@@ -1,6 +1,7 @@
 gameconfig=require './gameconfig'
 islands=require '../ts/islands'
 effects=require './effects'
+islandeffects=require '../ts/islandeffects'
 util=require '../ts/util'
 
 class Hex
@@ -34,7 +35,7 @@ class Hex
     getName:->@name
 
     # ターン処理
-    turnPorcess:->
+    turnProcess:->
 
 
     # 地形フラグ
@@ -297,6 +298,10 @@ lands=
         isLand:->false
         isSea:->true
         name:"海底油田"
+        oilPrice:1000
+        turnProcess:->
+            if @island?
+                (new islandeffects.GainMoney @oilPrice).on @island
         html:->
             @rawhtml {
                 src:"land16,gif"
