@@ -2,6 +2,7 @@
 islands=require '../ts/islands'
 lands=require '../coffee/lands'
 effects=require '../coffee/effects'
+islandeffects=require '../ts/islandeffects'
 
 should=require 'should'
 

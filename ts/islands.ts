@@ -13,8 +13,15 @@ export class Position{
 
 export class Island{
 	public land:LandArea;
+	public food:number;
+	public money:number;
+
+
 	constructor(){
 		this.land=new LandArea(gameconfig.island.landwidth, gameconfig.island.landheight);
+		//初期状態
+		this.food=gameconfig.owings.initialFood;
+		this.money=gameconfig.owings.initialMoney;
 	}
 	html(owner:bool):string{
 		return this.land.html(owner);
