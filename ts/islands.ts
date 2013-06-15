@@ -26,7 +26,11 @@ export class LandArea{
 	static routes:RouteList[]=[];	//routes[n]: 距離n以下のルートの一覧
 	static ringRoutes:RouteList[]=[];	//距離ちょうどn
 	private land:lands.Hex[][];
-	constructor(public width:number,public height:number){
+	private island:Island;
+	constructor(public width:number,public height:number,island?:Island){
+		if(island){
+			this.island=island;
+		}
 		//nullで初期化
 		this.land=[];
 		for(var y=0;y<height;y++){
@@ -45,6 +49,10 @@ export class LandArea{
 			x=pos.x, y=pos.y;
 		}
 		hex.setPosition(pos);
+		hex.setLand(this);
+		if(this.island){
+			hex.setIsland(this.island);
+		}
 		if(!this.inArea(pos)){
 			//セットできない
 			return;

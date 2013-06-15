@@ -1,9 +1,13 @@
 gameconfig=require './gameconfig'
 islands=require '../ts/islands'
+effects=require './effects'
+util=require '../ts/util'
 
 class Hex
     constructor:->
         @position=null
+        @land=null      #LandArea
+        @island=null    # nullかもしれんから・・・
 
     name:"?"
     setPosition:(x,y)->
@@ -11,6 +15,9 @@ class Hex
             @position=x
         else
             @position=new islands.Position x,y
+    setLand:(land)->@land=land
+    setIsland:(island)->@island=island
+
     html:(owner)->
         # owner:bool オーナー視点かどうか
         # HTMLを生成
@@ -22,8 +29,14 @@ class Hex
     rawhtml:(param)->
         # HTMLのtemp
         "<img class='hex' src='#{gameconfig.html.imagedir}#{param.src}'>"
+
     # 地形名を取得（デフォルトは名前）
     getName:->@name
+
+    # ターン処理
+    turnPorcess:->
+
+
     # 地形フラグ
     isLand:->true   # 陸かどうか
     isSea:->false   # 海系地形
@@ -47,9 +60,43 @@ class Base extends Hex
                 return i
             i-=1
         return 1
+# 成長する地形
+class Growable extends Hex
+    grow:->
+    shrink:->
+# 居住地形
+class Ecumene extends Growable
+    constructor:->
+        # 人口
+        @population=1
+    maxPopulation:200       # 最大人口
+    borderPopulation:100    # 増加量変わる区切り
+    growrate:10
+    growrate2:0
+    shrinkrate:30
+    grow:->
+        if @population<@borderPopulation
+            # よく成長する
+            @population+=util.random(@growrate)+1
+            if @population>@borderPopulation
+                @population=@borderPopulation
 
-module.exports=lands=
+        else if @growrate2>0
+            @population+=util.random(@growrate2)+1
+        if @population>@maxPopulation
+            @population=@maxPopulation
+    shrink:->
+        @population-=util.random(@shrinkrate)+1
+        if @population<=0
+            (new effects.ChangeHex(lands.Plains)).on this
+    turnProcess:->
+        @grow()
+
+lands=
     Hex:Hex
+    Base:Base
+    Growable:Growable
+    Ecumene:Ecumene
 
     Sea:class extends Hex
         name:"海"
@@ -84,8 +131,28 @@ module.exports=lands=
                 desc:""
             }
     # 平地
-    Plains:class extends Hex
+    Plains:class extends Growable
         name:"平地"
+        grow:->
+            # 村ができる
+            (new effects.ChangeHex (->
+                town=new lands.Town
+                town.population=1
+                town
+            )).on this
+        turnProcess:->
+            # 周囲に農場か村があったら一定確率で成長
+            unless @land?
+                return
+            if @growpop()
+                if @land.countAround(@position,1,(hex)->
+                    hex instanceof Ecumene || hex.is lands.Farm
+                ) > 0
+                    @grow()
+        # 成長判定をする
+        growpop:->util.random(5)==0
+                    
+
         html:->
             @rawhtml {
                 src:"land2.gif"
@@ -93,10 +160,7 @@ module.exports=lands=
                 desc:""
             }
     # 街系地形
-    Town:class extends Hex
-        constructor:->
-            super
-            @population=1   # 人口
+    Town:class extends Ecumene
         name:"街系地形"
         getName:->
             if @population<30
@@ -118,17 +182,22 @@ module.exports=lands=
                 desc:"#{@population}#{gameconfig.unit.population}"
             }
     # 森
-    Forest:class extends Hex
+    Forest:class extends Growable
         constructor:->
             super
             @value=1
         name:"森"
+        maxValue:200
+        grow:->
+            if @value<@maxValue
+                @value+=1
         html:(owner)->
             @rawhtml {
                 src:"land6.gif"
                 title:"森"
                 desc: if owner then "#{@value}#{gameconfig.unit.tree}" else ""
             }
+        turnProcess:->@grow()
     # 農場
     Farm:class extends Hex
         constructor:->
@@ -287,3 +356,7 @@ module.exports=lands=
                     title:"防衛施設"
                     desc:""
                 }
+
+# exportsに入れる
+for key in Object.keys lands
+    exports[key]=lands[key]

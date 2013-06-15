@@ -1,6 +1,7 @@
 # lands test
 islands=require '../ts/islands'
 lands=require '../coffee/lands'
+effects=require '../coffee/effects'
 
 should=require 'should'
 
@@ -53,3 +54,84 @@ describe 'Hex',->
             it 'Sea is sea',->
                 (new lands.Sea).is(lands.Sea).should.be.true
                 (new lands.Sea).is(lands.Plains).should.be.false
+    describe 'Ecumene',->
+        describe 'Town',->
+            town=null
+            beforeEach ->
+                town=new lands.Town
+            it 'should grow well',->
+                town.population=10
+                town.grow()
+                town.population.should.be.above 10
+            it 'should grow up to border',->
+                town.population=99
+                town.grow()
+                town.population.should.eql 100
+            it 'shouldn\'t grow above border',->
+                town.population=150
+                town.grow()
+                town.population.should.eql 150
+            it 'should cut off overpopulation',->
+                town.population=203
+                town.grow()
+                town.population.should.eql 200
+            it 'should shrink',->
+                town.population=100
+                town.shrink()
+                town.population.should.be.below 100
+            it 'should disappear',->
+                town.population=1
+                landarea=initArea()
+                landarea.set 5,5,town
+                town.shrink()
+                landarea.get(5,5).is(lands.Plains).should.be.true
+            it 'should accept Grow effect',->
+                town.population=80
+                (new effects.Grow).on town
+                town.grow()
+                town.population.should.be.above 80
+            it 'should accept Grow effect (but no growth)',->
+                town.population=120
+                (new effects.Grow).on town
+                town.grow()
+                town.population.should.be.eql 120
+        describe 'Plains',->
+            landarea=null
+            plains=null
+            beforeEach ->
+                landarea=initArea()
+                plains=new lands.Plains
+                landarea.set 5,5,plains
+            it 'should grow to Town',->
+                plains.grow()
+                town=landarea.get 5,5
+                town.is(lands.Town).should.be.true
+                town.population.should.eql 1
+            it 'should not change',->
+                plains.growpop=->true
+                plains.turnProcess()
+                landarea.get(5,5).should.eql plains
+            it 'should grow',->
+                plains.growpop=->true
+                landarea.set 4,5,new lands.Town
+                plains.turnProcess()
+                landarea.get(5,5).is(lands.Town).should.be.true
+            it 'should grow',->
+                plains.growpop=->true
+                landarea.set 4,5,new lands.Farm
+                plains.turnProcess()
+                landarea.get(5,5).is(lands.Town).should.be.true
+        describe 'Forest',->
+            forest=null
+            beforeEach ->
+                forest=new lands.Forest
+            it 'should grow',->
+                forest.value=12
+                forest.grow()
+                forest.value.should.eql 13
+            it 'should grow',->
+                forest.value=12
+                forest.turnProcess()
+                forest.value.should.eql 13
+
+

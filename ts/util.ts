@@ -14,3 +14,7 @@ export function rand(n:number,...ns:number[]):number{
 	//あてはまらない
 	return l;
 }
+//確率判定して返す p:0〜1
+export function prob(p:number):bool{
+	return Math.random()<p;
+}
