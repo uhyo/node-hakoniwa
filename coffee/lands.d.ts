@@ -16,6 +16,7 @@ export class Hex{
 	}):string;
 	getName():string;
 	turnProcess():void;
+	damage(type:string):void;
 	//地形判定系
 	isLand():bool;
 	isSea():bool;

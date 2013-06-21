@@ -4,6 +4,30 @@ effects=require './effects'
 islandeffects=require '../ts/islandeffects'
 util=require '../ts/util'
 
+#多重継承用の新しいクラスを用意する（前優先）
+multi=(consts...)->
+    # 順に継承したクラスを作るぞ!
+    result=consts.pop()   #consts:0だったらエラーかも
+    for con in consts by -1
+        prot=result.prototype
+        prop=Object.create prot
+        prop.constructor=result
+        result=((con)->`function ctor(){
+            //super
+            ctor.__super__.constructor.apply(this,arguments);
+            //自分
+            con.apply(this,arguments);
+        }`)(con)
+        result.__super__=prot
+        result.prototype=prop
+
+        # 詰め込む
+        for key in Object.getOwnPropertyNames con.prototype
+            desc=Object.getOwnPropertyDescriptor con.prototype,key
+            if desc.configurable
+                Object.defineProperty prop,key,desc
+        prop.constructor=result
+    result
 class Hex
     constructor:->
         @position=null
@@ -36,8 +60,19 @@ class Hex
 
     # ターン処理
     turnProcess:->
-
-
+    # 変化する
+    change:(hex)->
+        (new effects.ChangeHex hex).on this
+    # ダメージ処理
+    damage:(type)-> # タイプ:文字列
+        # 一般的な処理を記述
+        switch type
+            when "eruption-crator"
+                # 火山ができる
+                @change lands.Mountain
+            else
+                # その他
+                @change lands.Waste
     # 地形フラグ
     isLand:->true   # 陸かどうか
     isSea:->false   # 海系地形
@@ -49,6 +84,8 @@ class Hex
 # 基本的地形
 # ミサイル基地
 class Base extends Hex
+    constructor:->
+        super
     isBase:->true
     expTable:[]
     maxExp:0
@@ -99,8 +136,17 @@ lands=
     Growable:Growable
     Ecumene:Ecumene
 
-    Sea:class extends Hex
+    Sea:class Sea extends Hex
         name:"海"
+        damage:(type)->
+            # 多くの場合ダメージを受けない
+            switch type
+                when "eruption-crator"
+                    # 火山の噴火は仕方ない
+                    super
+                when "eruption-edge"
+                    # 周囲1Hex
+                    @change lands.Shoal
         isLand:->false
         isSea:->true
         html:->
@@ -109,8 +155,17 @@ lands=
                 title:"海"
                 desc:""
             }
-    Shoal:class extends Hex
+    Shoal:class Shoal extends Hex
+        constructor:->
+            super
         name:"浅瀬"
+        damage:(type)->
+            # 浅瀬もダメージを受けない
+            switch type
+                when "eruption-crator"
+                    super
+                when "eruption-edge"
+                    @change lands.Waste
         isLand:->false
         isSea:->true
         html:->
@@ -253,8 +308,12 @@ lands=
                 desc:""
             }
     # 山
-    Mountain:class extends Hex
+    Mountain:class Mountain extends Hex
+        constructor:->
+            super
         name:"山"
+        damage:(type)->
+            # 山はダメージを受けにくい
         isMountain:->true
         html:->
             @rawhtml {
@@ -263,7 +322,10 @@ lands=
                 desc:""
             }
     # 採掘場
-    Mine:class extends Hex
+    Mine:class extends Mountain
+        constructor:->
+            super
+            @quantity=0
         name:"採掘場"
         isMountain:->true
         html:->
@@ -273,13 +335,12 @@ lands=
                 desc:"#{@quantity}0#{gameconfig.util.population}規模"
             }
     # ミサイル基地
-    SeaBase:class extends Base
+    #SeaBase:class extends class extends Sea extends Base
+    SeaBase:class extends multi Sea,Base
         constructor:->
             super
             @exp=0
         expTable:[50,200]
-        isLand:->false
-        isSea:->true
         name:"海底基地"
         html:(owner)->
             if gameconfig.base.hide && !owner
@@ -294,9 +355,7 @@ lands=
                     title:"海底基地"
                     desc:"レベル#{@expToLevel @exp}"
                 }
-    OffshoreOilfield:class extends Hex
-        isLand:->false
-        isSea:->true
+    OffshoreOilfield:class extends Sea
         name:"海底油田"
         oilPrice:1000
         turnProcess:->
@@ -365,3 +424,4 @@ lands=
 # exportsに入れる
 for key in Object.keys lands
     exports[key]=lands[key]
+

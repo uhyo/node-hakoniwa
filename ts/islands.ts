@@ -132,7 +132,7 @@ export class LandArea{
 			return LandArea.ringRoutes[distance];
 		}else{
 			//ない場合は生成する
-			if(distance<=1){
+			if(distance<=0){
 				return this.listAround(distance);
 			}else{
 				var soto=this.listAround(distance), naka=this.listAround(distance-1);

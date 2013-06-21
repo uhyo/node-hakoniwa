@@ -51,6 +51,15 @@ describe 'Hex',->
             it 'Shoal is sea',->
                 (new lands.Shoal).isSea().should.be.true
                 (new lands.Shoal).isLand().should.be.false
+            it 'SeaBase is sea',->
+                (new lands.SeaBase).isSea().should.be.true
+                (new lands.SeaBase).isLand().should.be.false
+            it 'LandBase is base',->
+                should.exist (new lands.LandBase).expToLevel
+            it 'SeaBase is base',->
+                should.exist (new lands.SeaBase).expToLevel
+            it 'SeaBase is hex',->
+                should.exist (new lands.SeaBase).is
             it 'Waste is not sea',->
                 (new lands.Waste).isSea().should.be.false
         describe 'instance',->
@@ -140,11 +149,32 @@ describe 'Hex',->
         oil=null
         beforeEach ->
             oil=new lands.OffshoreOilfield
+        it 'should not cause error',->
+            oil.turnProcess()
         it 'should produce oil',->
             island=initIsland()
             island.money=500
             island.land.set 5,5,oil
             oil.turnProcess()
             island.money.should.eql 1500
+describe 'Effects',->
+    landarea=null
+    beforeEach ->
+        landarea=initArea()
+    it 'ChangeHex',->
+        (new effects.ChangeHex lands.Plains).on landarea.get 5,5
+        landarea.get(5,5).is(lands.Plains).should.be.true
+    describe 'Damage',->
+        it 'eruption-crator',->
+            (new effects.Damage "eruption-crator").on landarea.get 5,5
+            landarea.get(5,5).is(lands.Mountain).should.be.true
+        it 'eruption-edge',->
+            (new effects.Damage "eruption-edge").on landarea.get 5,5
+            landarea.get(5,5).is(lands.Shoal).should.be.true
+            (new effects.Damage "eruption-edge").on landarea.get 5,5
+            landarea.get(5,5).is(lands.Waste).should.be.true
+            (new effects.Damage "eruption-edge").on landarea.get 5,5
+            landarea.get(5,5).is(lands.Waste).should.be.true
+
 
 

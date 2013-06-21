@@ -33,6 +33,12 @@ effects=
                 # Growableじゃなかったら何もしない
                 return
             hex.grow()
+    Damage:class extends Effect
+        constructor:(@type)->    # type:string
+        on:(hex)->
+            # そのまま適用
+            hex.damage @type
+
 
 # exportsに入れる
 for key in Object.keys effects
