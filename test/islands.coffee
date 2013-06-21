@@ -61,3 +61,11 @@ describe 'islandEffect',->
                     land.ringAround(1).fromEach(center).every((pos)->
                         land.get(pos).is lands.Waste
                     ).should.be.true
+            it 'erupts at edge of island',->
+                zero=new islands.Position 0,0
+                (new islandeffects.Eruption zero).on island
+                land=island.land
+                land.get(zero).is(lands.Mountain).should.be.true
+                land.ringAround(1).fromEach(zero).every((pos)->
+                    land.get(pos).is lands.Shoal
+                ).should.be.true

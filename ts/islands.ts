@@ -30,8 +30,8 @@ export class Island{
 
 export class LandArea{
 	//ルートキャッシュ
-	static routes:RouteList[]=[];	//routes[n]: 距離n以下のルートの一覧
-	static ringRoutes:RouteList[]=[];	//距離ちょうどn
+	private routes:RouteList[]=[];	//routes[n]: 距離n以下のルートの一覧
+	private ringRoutes:RouteList[]=[];	//距離ちょうどn
 	private land:lands.Hex[][];
 	private island:Island;
 	constructor(public width:number,public height:number,island?:Island){
@@ -97,13 +97,13 @@ export class LandArea{
 		//まずルートを生成
 		//そのHexの情報を全部もらう
 		var smallRoutes:RouteList;
-		if(LandArea.routes[distance]){
-			return LandArea.routes[distance];
+		if(this.routes[distance]){
+			return this.routes[distance];
 		}else{
 			//ない場合は生成する
 			if(distance<1){
 				//空の移動（移動しない）
-				return new RouteList([new Route([])]);
+				return new RouteList([new Route([])],this);
 			}else{
 				smallRoutes=this.listAround(distance-1);
 				var obj=smallRoutes.makeFlags();	//すでに到達したところは記録
@@ -121,15 +121,15 @@ export class LandArea{
 						obj[str]=true;
 					}
 				});
-				var result=new RouteList(results);
-				LandArea.routes[distance]=result;
+				var result=new RouteList(results,this);
+				this.routes[distance]=result;
 				return result;
 			}
 		}
 	}
 	ringAround(distance:number):RouteList{
-		if(LandArea.ringRoutes[distance]){
-			return LandArea.ringRoutes[distance];
+		if(this.ringRoutes[distance]){
+			return this.ringRoutes[distance];
 		}else{
 			//ない場合は生成する
 			if(distance<=0){
@@ -166,13 +166,19 @@ export class LandArea{
 		}
 		var routes=this.listAround(distance);
 		//数えるぞ!
-		return routes.fromEach(pos).filter((pos)=>{
+		var poss=routes.fromEach(pos);
+		var result= poss.filter((pos)=>{
 			var hex:lands.Hex = this.inArea(pos) ? this.get(pos) : ((hex:lands.Hex)=>{
 				hex.setPosition(pos);
 				return hex;
 			})(new (<any>lands).Sea());
 			return cond(hex);
 		}).length;
+		if(poss.length<this.numberAround(distance) && cond(new (<any>lands).Sea)){
+			//たりない（端だから？)
+			result+=this.numberAround(distance)-poss.length;
+		}
+		return result;
 	}
 }
 export function makeNewIsland():Island{
@@ -274,13 +280,19 @@ export class Route{
 }
 //いろんな経路
 export class RouteList{
-	constructor(private routes:Route[]){
+	constructor(private routes:Route[],private land?:LandArea){
 	}
 	getRoutes():Route[]{
 		return this.routes.concat([]);
 	}
 	fromEach(pos:Position):Position[]{
-		return this.routes.map((route)=>route.from(pos));
+		var poss=this.routes.map((route)=>route.from(pos));
+		if(this.land){
+			poss=poss.filter((pos)=>{
+				return 0<=pos.x && 0<=pos.y && pos.x<this.land.width && pos.y<this.land.height;
+			});
+		}
+		return poss;
 	}
 	//フラグオブジェクトを作って返す
 	makeFlags():RouteFlags{
@@ -304,7 +316,7 @@ export class RouteList{
 				newlist.push(route);
 			}
 		});
-		return new RouteList(newlist);
+		return new RouteList(newlist,this.land);
 	}
 	sub(list:RouteList):RouteList{
 		var newlist:Route[]=[];
@@ -316,7 +328,7 @@ export class RouteList{
 				newlist.push(route);
 			}
 		});
-		return new RouteList(newlist);
+		return new RouteList(newlist,this.land);
 	}
 	toString():string{
 		return "["+this.routes.toString()+"]";
