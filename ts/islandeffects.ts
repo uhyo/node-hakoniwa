@@ -3,6 +3,7 @@ var gameconfig=require('../coffee/gameconfig');
 
 import islands=module("./islands");
 import effects=module("../coffee/effects");
+import util=module("./util");
 
 export class IslandEffect{
 	constructor(){
@@ -50,6 +51,20 @@ export class Eruption extends Disaster{
 		var edge=new effects.Damage("eruption-edge");
 		land.ringAround(1).fromEach(this.pos).forEach((pos)=>{
 			edge.on(land.get(pos));
+		});
+	}
+}
+export class Eartuquake extends Disaster{
+	damageprob:number=gameconfig.disaster.earthquake.damageProb;
+
+	on(island:islands.Island):void{
+		//各ヘックスについて
+		var rb=this.damageprob/1000, land=island.land;
+		land.randomPositions().forEach((pos)=>{
+			if(util.prob(rb)){
+				//地震被害判定あり
+				(new effects.Damage("earthquake")).on(land.get(pos));
+			}
 		});
 	}
 }

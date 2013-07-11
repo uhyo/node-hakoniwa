@@ -1,3 +1,4 @@
+# 確率は基本的に千分率
 module.exports=
     island:
         landwidth:12
@@ -21,3 +22,9 @@ module.exports=
     base:
         hide:true   # ミサイル基地を隠すかどうか
 
+    # 災害
+    disaster:
+        # 地震
+        earthquake:
+            # 個々のヘックスがダメージを受ける確率
+            damageProb:250

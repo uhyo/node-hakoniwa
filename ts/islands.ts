@@ -180,6 +180,16 @@ export class LandArea{
 		}
 		return result;
 	}
+	randomPositions():Position[]{
+		//まず全部列挙
+		var result=[];
+		for(var x=0;x<this.width;x++){
+			for(var y=0;y<this.height;y++){
+				result.push(new Position(x,y));
+			}
+		}
+		return util.shufflE(result);
+	}
 }
 export function makeNewIsland():Island{
 	var result=new Island;
@@ -289,7 +299,8 @@ export class RouteList{
 		var poss=this.routes.map((route)=>route.from(pos));
 		if(this.land){
 			poss=poss.filter((pos)=>{
-				return 0<=pos.x && 0<=pos.y && pos.x<this.land.width && pos.y<this.land.height;
+				//return 0<=pos.x && 0<=pos.y && pos.x<this.land.width && pos.y<this.land.height;
+				return this.land.inArea(pos);
 			});
 		}
 		return poss;

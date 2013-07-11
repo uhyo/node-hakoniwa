@@ -18,3 +18,18 @@ export function rand(n:number,...ns:number[]):number{
 export function prob(p:number):bool{
 	return Math.random()<p;
 }
+//整数版p:0〜n
+export function probb(p:number,n:number):bool{
+	return prob(p/n);
+}
+//配列シャッフル(破壊的) generics使いたい?
+export function shufflE(arr:any[]):any[]{
+	//なんとかかんとか法（後ろから確定させる）
+	for(var l=arr.length-1;l>=0;l--){
+		var idx=random(l+1);
+		var tmp=arr[idx];
+		arr[idx]=arr[l];
+		arr[l]=tmp;
+	}
+	return arr;
+}

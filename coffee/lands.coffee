@@ -70,9 +70,6 @@ class Hex
             when "eruption-crator"
                 # 火山ができる
                 @change lands.Mountain
-            else
-                # その他
-                @change lands.Waste
     # 地形フラグ
     isLand:->true   # 陸かどうか
     isSea:->false   # 海系地形
@@ -218,6 +215,13 @@ lands=
     # 街系地形
     Town:class extends Ecumene
         name:"街系地形"
+        damage:(type)->
+            switch type
+                # 地震で壊滅
+                when 'earthquake'
+                    @change lands.Waste
+                else
+                    super
         getName:->
             if @population<30
                 "村"
@@ -272,6 +276,13 @@ lands=
             super
             @quantity=0
         name:"工場"
+        damage:(type)->
+            switch type
+                # 地震で壊滅
+                when 'earthquake'
+                    @change lands.Waste
+                else
+                    super
         html:->
             @rawhtml {
                 src:"land8.gif"
@@ -407,6 +418,13 @@ lands=
                 }
     Haribote:class extends Hex
         name:"ハリボテ"
+        damage:(type)->
+            switch type
+                # 地震で壊滅
+                when 'earthquake'
+                    @change lands.Waste
+                else
+                    super
         html:(owner)->
             if owner
                 @rawhtml {

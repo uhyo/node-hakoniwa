@@ -175,6 +175,25 @@ describe 'Effects',->
             landarea.get(5,5).is(lands.Waste).should.be.true
             (new effects.Damage "eruption-edge").on landarea.get 5,5
             landarea.get(5,5).is(lands.Waste).should.be.true
+        describe 'earthquake',->
+            dm=new effects.Damage "earthquake"
+            it 'on Town',->
+                landarea.set 5,5,new lands.Town
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'on Haribote',->
+                landarea.set 5,5,new lands.Haribote
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'on Factory',->
+                landarea.set 5,5,new lands.Factory
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'others',->
+                landarea.set 5,5,new lands.Plains
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Plains).should.be.true
+
 
 
 
