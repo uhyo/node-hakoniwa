@@ -4,11 +4,22 @@ var gameconfig=require('../coffee/gameconfig');
 import islands=module("./islands");
 import effects=module("../coffee/effects");
 import util=module("./util");
+import logs=module("./logs");
 
 export class IslandEffect{
+	private logs:logs.Log[];
 	constructor(){
+		this.logs=[];
 	}
 	on(island:islands.Island):void{
+		//ログがあったら適用するぞ!
+		this.logs.forEach((log)=>{
+			island.addLog(log);
+		});
+	}
+	//エフェクトに追加
+	appendLog(log:logs.Log):void{
+		this.logs.push(log);
 	}
 }
 
@@ -22,6 +33,7 @@ export class GainFood extends Gain{
 		super();
 	}
 	on(island:islands.Island):void{
+		super.on(island);
 		island.food+=this.food;
 	}
 }
@@ -31,6 +43,7 @@ export class GainMoney extends Gain{
 		super();
 	}
 	on(island:islands.Island):void{
+		super.on(island);
 		island.money+=this.money;
 	}
 }
@@ -44,6 +57,7 @@ export class Eruption extends Disaster{
 		super();
 	}
 	on(island:islands.Island):void{
+		super.on(island);
 		var land=island.land;
 		//中心の被害
 		(new effects.Damage("eruption-crator")).on(land.get(this.pos));
@@ -54,15 +68,19 @@ export class Eruption extends Disaster{
 		});
 	}
 }
-export class Eartuquake extends Disaster{
+export class Earthquake extends Disaster{
 	damageprob:number=gameconfig.disaster.earthquake.damageProb;
 
 	on(island:islands.Island):void{
+		super.on(island);
+		//発生ログ
+		island.addLog(new logs.EarthquakeOccurrence());
 		//各ヘックスについて
 		var rb=this.damageprob/1000, land=island.land;
 		land.randomPositions().forEach((pos)=>{
 			if(util.prob(rb)){
 				//地震被害判定あり
+				console.log(pos);
 				(new effects.Damage("earthquake")).on(land.get(pos));
 			}
 		});

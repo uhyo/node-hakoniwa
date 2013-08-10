@@ -22,8 +22,8 @@ export function prob(p:number):bool{
 export function probb(p:number,n:number):bool{
 	return prob(p/n);
 }
-//配列シャッフル(破壊的) generics使いたい?
-export function shufflE(arr:any[]):any[]{
+//配列シャッフル(破壊的)
+export function shufflE<T>(arr:Array<T>):Array<T>{
 	//なんとかかんとか法（後ろから確定させる）
 	for(var l=arr.length-1;l>=0;l--){
 		var idx=random(l+1);

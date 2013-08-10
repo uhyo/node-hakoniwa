@@ -1,5 +1,5 @@
 import islands=module("../ts/islands");
-export class Hex{
+export declare class Hex{
 	name:string;
 	position:islands.Position;
 	land:islands.LandArea;
@@ -10,11 +10,11 @@ export class Hex{
 	setPosition(pos:islands.Position):void;
 	setLand(land:islands.LandArea):void;
 	setIsland(island:islands.Island):void;
-	html(owner:bool):string;
+	html(lang:string,owner:bool):string;
 	private rawhtml(param:{
 		src:string;
 	}):string;
-	getName():string;
+	getName(lang?:string):string;
 	turnProcess():void;
 	damage(type:string):void;
 	//地形判定系
@@ -24,8 +24,9 @@ export class Hex{
 	isBase():bool;
 	//一致
 	is(con:new()=>Hex):bool;
+	clone():Hex;
 }
-export class Base extends Hex{
+export declare class Base extends Hex{
 	expTable:number[];
 	maxExp:number;
 	expToLevel(exp:number):number;

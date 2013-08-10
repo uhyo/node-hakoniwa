@@ -3,6 +3,7 @@ islands=require '../ts/islands'
 effects=require './effects'
 islandeffects=require '../ts/islandeffects'
 util=require '../ts/util'
+logs=require '../ts/logs'
 
 #多重継承用の新しいクラスを用意する（前優先）
 multi=(consts...)->
@@ -34,7 +35,9 @@ class Hex
         @land=null      #LandArea
         @island=null    # nullかもしれんから・・・
 
-    name:"?"
+    name:
+        ja:"?"
+        en:"?"
     setPosition:(x,y)->
         if x instanceof islands.Position
             @position=x
@@ -43,7 +46,7 @@ class Hex
     setLand:(land)->@land=land
     setIsland:(island)->@island=island
 
-    html:(owner)->
+    html:(lang,owner)->
         # owner:bool オーナー視点かどうか
         # HTMLを生成
         @rawhtml {
@@ -56,20 +59,25 @@ class Hex
         "<img class='hex' src='#{gameconfig.html.imagedir}#{param.src}'>"
 
     # 地形名を取得（デフォルトは名前）
-    getName:->@name
+    getName:(lang="ja")->@name[lang]
 
     # ターン処理
     turnProcess:->
     # 変化する
-    change:(hex)->
-        (new effects.ChangeHex hex).on this
+    change:(hex,optfunc)->
+        eff=new effects.ChangeHex hex
+        if optfunc?
+            optfunc eff
+        eff.on this
     # ダメージ処理
     damage:(type)-> # タイプ:文字列
         # 一般的な処理を記述
         switch type
             when "eruption-crator"
                 # 火山ができる
-                @change lands.Mountain
+                @change lands.Mountain,(e)=>
+                    e.appendLog new logs.EruptionCrator @position
+
     # 地形フラグ
     isLand:->true   # 陸かどうか
     isSea:->false   # 海系地形
@@ -78,6 +86,14 @@ class Hex
     isMountain:->false # 山かどうか
     # 一致 コンストラクタをわたして
     is:(con)->this instanceof con
+    # clone:自分をコピー
+    clone:->
+        result=Object.create @constructor.prototype
+        for key in Object.getOwnPropertyNames this
+            desc=Object.getOwnPropertyDescriptor this,key
+            Object.defineProperty result,key,desc
+        result
+
 # 基本的地形
 # ミサイル基地
 class Base extends Hex
@@ -127,6 +143,15 @@ class Ecumene extends Growable
     turnProcess:->
         @grow()
 
+# 災害対応系
+class EarthquakeVulnerable
+    damage:(type)->
+        if type=='earthquake'
+            @change lands.Waste,(e)=>
+                e.appendLog new logs.EarthquakeDamage @position,@clone()
+        else
+            super
+
 lands=
     Hex:Hex
     Base:Base
@@ -134,7 +159,9 @@ lands=
     Ecumene:Ecumene
 
     Sea:class Sea extends Hex
-        name:"海"
+        name:
+            ja:"海"
+            en:"sea"
         damage:(type)->
             # 多くの場合ダメージを受けない
             switch type
@@ -143,32 +170,36 @@ lands=
                     super
                 when "eruption-edge"
                     # 周囲1Hex
-                    @change lands.Shoal
+                    @change lands.Shoal,(e)=>
+                        e.appendLog new logs.EruptionSea @position,@clone()
         isLand:->false
         isSea:->true
-        html:->
+        html:(lang)->
             @rawhtml {
                 src:"land0.gif"
-                title:"海"
+                title:@getName lang
                 desc:""
             }
     Shoal:class Shoal extends Hex
         constructor:->
             super
-        name:"浅瀬"
+        name:
+            ja:"浅瀬"
+            en:"shoal"
         damage:(type)->
             # 浅瀬もダメージを受けない
             switch type
                 when "eruption-crator"
                     super
                 when "eruption-edge"
-                    @change lands.Waste
+                    @change lands.Waste,(e)=>
+                        e.appendLog new logs.EruptionShoal @position,@clone()
         isLand:->false
         isSea:->true
-        html:->
+        html:(lang)->
             @rawhtml {
                 src:"land14.gif"
-                title:"浅瀬"
+                title:@getName lang
                 desc:""
             }
     # 荒地
@@ -176,16 +207,20 @@ lands=
         constructor:->
             super
             @type=0 # タイプ:0=通常 1=ミサイル跡
-        name:"荒地"
-        html:->
+        name:
+            ja:"荒地"
+            en:"waste lang"
+        html:(lang)->
             @rawhtml {
                 src: if @type==0 then "land1.gif" else "land13.gif"
-                title:"荒地"
+                title:@getName lang
                 desc:""
             }
     # 平地
     Plains:class extends Growable
-        name:"平地"
+        name:
+            ja:"平地"
+            en:"plains"
         grow:->
             # 村ができる
             (new effects.ChangeHex (->
@@ -206,30 +241,37 @@ lands=
         growpop:->util.random(5)==0
                     
 
-        html:->
+        html:(lang)->
             @rawhtml {
                 src:"land2.gif"
-                title:"平地"
+                title:@getName lang
                 desc:""
             }
     # 街系地形
-    Town:class extends Ecumene
+    Town:class extends multi EarthquakeVulnerable,Ecumene
         name:"街系地形"
         damage:(type)->
-            switch type
-                # 地震で壊滅
-                when 'earthquake'
-                    @change lands.Waste
-                else
-                    super
-        getName:->
+            super
+        getName:(lang)->
             if @population<30
-                "村"
+                switch lang
+                    when "ja"
+                        "村"
+                    when "en"
+                        "village"
             else if @population<100
-                "町"
+                switch lang
+                    when "ja"
+                        "町"
+                    when "en"
+                        "town"
             else
-                "都市"
-        html:->
+                switch lang
+                    when "ja"
+                        "都市"
+                    when "en"
+                        "city"
+        html:(lang)->
             @rawhtml {
                 src: (if @population<30
                     "land3.gif"
@@ -238,7 +280,7 @@ lands=
                 else
                     "land5.gif"
                 )
-                title:@getName()
+                title:@getName lang
                 desc:"#{@population}#{gameconfig.unit.population}"
             }
     # 森
@@ -246,15 +288,17 @@ lands=
         constructor:->
             super
             @value=1
-        name:"森"
+        name:
+            ja:"森"
+            en:"forest"
         maxValue:200
         grow:->
             if @value<@maxValue
                 @value+=1
-        html:(owner)->
+        html:(lang,owner)->
             @rawhtml {
                 src:"land6.gif"
-                title:"森"
+                title:@getName lang
                 desc: if owner then "#{@value}#{gameconfig.unit.tree}" else ""
             }
         turnProcess:->@grow()
@@ -263,30 +307,29 @@ lands=
         constructor:->
             super
             @quantity=0
-        name:"農場"
-        html:->
+        name:
+            ja:"農場"
+            en:"farm"
+        html:(lang)->
             @rawhtml {
                 src:"land7.gif"
-                title:"農場"
+                title:@getName lang
                 desc:"#{@quantity}0#{gameconfig.unit.population}規模"
             }
     # 工場
-    Factory:class extends Hex
+    Factory:class extends multi EarthquakeVulnerable,Hex
         constructor:->
             super
             @quantity=0
-        name:"工場"
+        name:
+            ja:"工場"
+            en:"factory"
         damage:(type)->
-            switch type
-                # 地震で壊滅
-                when 'earthquake'
-                    @change lands.Waste
-                else
-                    super
-        html:->
+            super
+        html:(lang)->
             @rawhtml {
                 src:"land8.gif"
-                title:"工場"
+                title:@getName lang
                 desc:"#{@quantity}0#{gameconfig.unit.population}規模"
             }
     # ミサイル基地
@@ -295,41 +338,47 @@ lands=
             super
             @exp=0
         expTable:[20,60,120,200]
-        name:"ミサイル基地"
-        html:(owner)->
+        name:
+            ja:"ミサイル基地"
+            en:"missile base"
+        html:(lang,owner)->
             if gameconfig.base.hide && !owner
                 @rawhtml {
                     src:"land6.gif"
-                    title:"森"
+                    title:@getName lang
                     desc:""
                 }
             else
                 @rawhtml {
                     src:"land9.gif"
-                    title:"ミサイル基地"
+                    title:@getName lang
                     desc:"レベル#{@expToLevel @exp}"
                 }
     # 防衛施設
-    Defence:class extends Hex
-        name:"防衛施設"
-        html:->
+    Defence:class Defence extends Hex
+        name:
+            ja:"防衛施設"
+            en:"defense base"
+        html:(lang)->
             @rawhtml {
                 src:"land10.gif"
-                title:"防衛施設"
+                title:@getName lang
                 desc:""
             }
     # 山
     Mountain:class Mountain extends Hex
         constructor:->
             super
-        name:"山"
+        name:
+            ja:"山"
+            en:"mountain"
         damage:(type)->
             # 山はダメージを受けにくい
         isMountain:->true
-        html:->
+        html:(lang)->
             @rawhtml {
                 src:"land11.gif"
-                title:"山"
+                title:@getName lang
                 desc:""
             }
     # 採掘場
@@ -337,12 +386,14 @@ lands=
         constructor:->
             super
             @quantity=0
-        name:"採掘場"
+        name:
+            ja:"採掘場"
+            en:"mine"
         isMountain:->true
-        html:->
+        html:(lang)->
             @rawhtml {
                 src:"land15.gif"
-                title:"採掘場"
+                title:@getName lang
                 desc:"#{@quantity}0#{gameconfig.util.population}規模"
             }
     # ミサイル基地
@@ -352,30 +403,34 @@ lands=
             super
             @exp=0
         expTable:[50,200]
-        name:"海底基地"
-        html:(owner)->
+        name:
+            ja:"海底基地"
+            en:"undersea missile base"
+        html:(lang,owner)->
             if gameconfig.base.hide && !owner
                 @rawhtml {
                     src:"land0.gif"
-                    title:"海"
+                    title:@getName lang
                     desc:""
                 }
             else
                 @rawhtml {
                     src:"land12.gif"
-                    title:"海底基地"
+                    title:@getName lang
                     desc:"レベル#{@expToLevel @exp}"
                 }
     OffshoreOilfield:class extends Sea
-        name:"海底油田"
+        name:
+            ja:"海底油田"
+            en:"offshore oilfield"
         oilPrice:1000
         turnProcess:->
             if @island?
                 (new islandeffects.GainMoney @oilPrice).on @island
-        html:->
+        html:(lang)->
             @rawhtml {
                 src:"land16,gif"
-                title:"海底油田"
+                title:@getName lang
                 desc:""
             }
     Monument:class extends Hex
@@ -386,56 +441,61 @@ lands=
                 [
                     #0
                     {
-                        name:"モノリス"
+                        name:
+                            ja:"モノリス"
+                            en:"Monolith"
                         image:"monument0.gif"
                     },
                     #1
                     {
-                        name:"平和記念碑"
+                        name:
+                            ja:"平和記念碑"
+                            en:"Monument of Peace"
                         image:"monument0.gif"
                     }
                     #2
                     {
-                        name:"戦いの碑"
+                        name:
+                            ja:"戦いの碑"
+                            en:"Monument of War"
                         image:"monument0.gif"
                     }
                 ]
                )()
-        name:"記念碑"
-        html:->
+        name:
+            ja:"記念碑"
+            en:"monument"
+        html:(lang)->
             obj=@types[@type]
             if obj?
                 @rawhtml {
                     src:obj.image
-                    title:"記念碑"
-                    desc:obj.name
+                    title:@getName lang
+                    desc:obj.name[lang]
                 }
             else
                 @rawhtml {
                     src:""
-                    title:"記念碑"
+                    title:@getName lang
                     desc:""
                 }
-    Haribote:class extends Hex
-        name:"ハリボテ"
+    Haribote:class extends multi EarthquakeVulnerable,Hex
+        name:
+            ja:"ハリボテ"
+            en:"haribote"
         damage:(type)->
-            switch type
-                # 地震で壊滅
-                when 'earthquake'
-                    @change lands.Waste
-                else
-                    super
-        html:(owner)->
+            super
+        html:(lang,owner)->
             if owner
                 @rawhtml {
                     src:"land10.gif"
-                    title:"ハリボテ"
+                    title:@getName lang
                     desc:""
                 }
             else
                 @rawhtml {
                     sec:"land10.gif"
-                    title:"防衛施設"
+                    title:(new Defence).getName lang
                     desc:""
                 }
 

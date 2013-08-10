@@ -2,12 +2,26 @@ declare function require(path:string):any;
 var gameconfig=require("../coffee/gameconfig");
 import lands=module("../coffee/lands");
 import util=module("./util");
+import logs=module("./logs");
 //座標オブジェクト
 export class Position{
 	constructor(public x:number,public y:number){
 	}
-	toString():string{
+	toString(lang?:string):string{
 		return "("+this.x+", "+this.y+")";
+	}
+}
+//islandのデータ。Logと一緒に保存してもいいぞ!
+export class IslandMetadata{
+	constructor(private island:Island){
+	}
+	public island_id:any;	//ObjectID?
+	public name:string;	//island_name
+	clone():IslandMetadata{
+		var result=new IslandMetadata(this.island);
+		result.island_id=this.island_id;
+		result.name=this.name;
+		return result;
 	}
 }
 
@@ -16,15 +30,32 @@ export class Island{
 	public food:number;
 	public money:number;
 
+	public metadata:IslandMetadata;
+
+	//まだDB入りしていない系のログだ!
+	private logs:logs.Log[];
 
 	constructor(){
 		this.land=new LandArea(gameconfig.island.landwidth, gameconfig.island.landheight,this);
 		//初期状態
 		this.food=gameconfig.owings.initialFood;
 		this.money=gameconfig.owings.initialMoney;
+		this.logs=[];
+		this.metadata=new IslandMetadata(this);
 	}
-	html(owner:bool):string{
-		return this.land.html(owner);
+	html(lang:string,owner:bool):string{
+		//すごく暫定的
+		return this.land.html(lang,owner)+this.logs.map((log)=>{
+			return "<p>"+log.html()+"</p>"
+		}).join("\n");
+	}
+	addLog(log:logs.Log):void{
+		this.logs.push(log);
+		log.setParam(this);
+	}
+	getMetadata():IslandMetadata{
+		//新しいメタデータを作って返すぞ!
+		return this.metadata.clone();
 	}
 }
 
@@ -77,10 +108,10 @@ export class LandArea{
 		}
 		return this.land[y][x];
 	}
-	html(owner:bool):string{
+	html(lang:string,owner:bool):string{
 		return this.land.map(function(row){
 			return row.map(function(hex){
-				return hex.html(owner);
+				return hex.html(lang,owner);
 			}).join("");
 		}).map(function(x:string,i:number){
 			return i%2===0 ?
