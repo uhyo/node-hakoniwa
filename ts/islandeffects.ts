@@ -68,6 +68,7 @@ export class Eruption extends Disaster{
 		});
 	}
 }
+//地震
 export class Earthquake extends Disaster{
 	damageprob:number=gameconfig.disaster.earthquake.damageProb;
 
@@ -77,11 +78,33 @@ export class Earthquake extends Disaster{
 		island.addLog(new logs.EarthquakeOccurrence());
 		//各ヘックスについて
 		var rb=this.damageprob/1000, land=island.land;
+		var damage=new effects.Damage("earthquake");
 		land.randomPositions().forEach((pos)=>{
 			if(util.prob(rb)){
 				//地震被害判定あり
-				console.log(pos);
-				(new effects.Damage("earthquake")).on(land.get(pos));
+				damage.on(land.get(pos));
+			}
+		});
+	}
+}
+//津波
+export class Tsunami extends Disaster{
+	damagedice:number=gameconfig.disaster.tsunami.damageDice;
+
+	on(island:islands.Island):void{
+		super.on(island);
+		//発生ログ
+		island.addLog(new logs.TsunamiOccurrence());
+		//各ヘックスについて
+		var land=island.land;
+		var damage=new effects.Damage("tsunami");
+		land.randomPositions().forEach((pos)=>{
+			//周囲の海の数を数えて1d12以下で崩壊
+			var seas=land.countAround(pos,1,(hex)=>{
+				return hex.isSea();
+			});
+			if(util.probb(seas,this.damagedice)){
+				damage.on(land.get(pos));
 			}
 		});
 	}

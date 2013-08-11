@@ -26,10 +26,42 @@ multi=(consts...)->
         for key in Object.getOwnPropertyNames con.prototype
             desc=Object.getOwnPropertyDescriptor con.prototype,key
             if desc.configurable
+                if "function"==typeof desc.value
+                    # multiのは_superを渡さないといけない
+                    desc.value=((name,func,sup)->
+                        ->
+                            args=arguments
+                            _super= =>
+                                if arguments.length==0
+                                    sup[key].apply this,args
+                                else
+                                    sup[key].apply this,arguments
+                            func.call this, _super,args...
+                    )(key,desc.value,prot)
                 Object.defineProperty prop,key,desc
         prop.constructor=result
     result
+
 class Hex
+    # mixin用
+    ###
+    @mixin:(classes...)->
+        # @はコンストラクタ
+        for k in classes by -1
+            kp=k.prototype
+            for key in Object.getOwnPropertyNames kp
+                # _superをわたすやつがある
+                if "function"===typeof kp[key]
+                    @::[key]=((func)=>
+                        ->
+                            args=arguments
+                            _super=->
+                                if arguments.length==0
+
+
+                    )(kp[key])
+    ###
+
     constructor:->
         @position=null
         @land=null      #LandArea
@@ -77,6 +109,10 @@ class Hex
                 # 火山ができる
                 @change lands.Mountain,(e)=>
                     e.appendLog new logs.EruptionCrator @position
+            when "eruption-edge"
+                # 荒地になる
+                @change lands.Waste,(e)=>
+                    e.appendLog new logs.EruptionDamage @position,@clone()
 
     # 地形フラグ
     isLand:->true   # 陸かどうか
@@ -95,22 +131,6 @@ class Hex
         result
 
 # 基本的地形
-# ミサイル基地
-class Base extends Hex
-    constructor:->
-        super
-    isBase:->true
-    expTable:[]
-    maxExp:0
-    expToLevel:(exp)->
-        # expからレベルを算出
-        i=@expTable.length
-        while i>=1
-            if exp>=@expTable[i-1]
-                # このレベルだ
-                return i
-            i-=1
-        return 1
 # 成長する地形
 class Growable extends Hex
     grow:->
@@ -143,14 +163,35 @@ class Ecumene extends Growable
     turnProcess:->
         @grow()
 
+#=================--- mixin用
+# ミサイル基地
+class Base
+    isBase:->true
+    maxExp:0
+    expToLevel:(_super,exp)->
+        # expからレベルを算出
+        i=@expTable.length
+        while i>=1
+            if exp>=@expTable[i-1]
+                # このレベルだ
+                return i
+            i-=1
+        return 1
 # 災害対応系
 class EarthquakeVulnerable
-    damage:(type)->
+    damage:(_super,type)->
         if type=='earthquake'
             @change lands.Waste,(e)=>
                 e.appendLog new logs.EarthquakeDamage @position,@clone()
         else
-            super
+            _super()
+class TsunamiVulnerable
+    damage:(_super,type)->
+        if type=='tsunami'
+            @change lands.Waste,(e)=>
+                e.appendLog new logs.TsunamiDamage @position,@clone()
+        else
+            _super()
 
 lands=
     Hex:Hex
@@ -248,10 +289,13 @@ lands=
                 desc:""
             }
     # 街系地形
-    Town:class extends multi EarthquakeVulnerable,Ecumene
+    Town:class extends multi TsunamiVulnerable,EarthquakeVulnerable,Ecumene
         name:"街系地形"
         damage:(type)->
-            super
+            if type=='earthquake' && @population<100
+                # 町以下の場合は被害うけない
+            else
+                super
         getName:(lang)->
             if @population<30
                 switch lang
@@ -303,7 +347,7 @@ lands=
             }
         turnProcess:->@grow()
     # 農場
-    Farm:class extends Hex
+    Farm:class extends multi TsunamiVulnerable,Hex
         constructor:->
             super
             @quantity=0
@@ -317,7 +361,7 @@ lands=
                 desc:"#{@quantity}0#{gameconfig.unit.population}規模"
             }
     # 工場
-    Factory:class extends multi EarthquakeVulnerable,Hex
+    Factory:class extends multi TsunamiVulnerable,EarthquakeVulnerable,Hex
         constructor:->
             super
             @quantity=0
@@ -333,7 +377,7 @@ lands=
                 desc:"#{@quantity}0#{gameconfig.unit.population}規模"
             }
     # ミサイル基地
-    LandBase:class extends Base
+    LandBase:class extends multi TsunamiVulnerable,Base,Hex
         constructor:->
             super
             @exp=0
@@ -355,7 +399,7 @@ lands=
                     desc:"レベル#{@expToLevel @exp}"
                 }
     # 防衛施設
-    Defence:class Defence extends Hex
+    Defence:class Defence extends multi TsunamiVulnerable,Hex
         name:
             ja:"防衛施設"
             en:"defense base"
@@ -397,8 +441,8 @@ lands=
                 desc:"#{@quantity}0#{gameconfig.util.population}規模"
             }
     # ミサイル基地
-    #SeaBase:class extends class extends Sea extends Base
-    SeaBase:class extends multi Sea,Base
+    #SeaBase:class extends multi Sea,Base
+    SeaBase:class extends multi Base,Sea
         constructor:->
             super
             @exp=0
@@ -479,7 +523,7 @@ lands=
                     title:@getName lang
                     desc:""
                 }
-    Haribote:class extends multi EarthquakeVulnerable,Hex
+    Haribote:class extends multi TsunamiVulnerable,EarthquakeVulnerable,Hex
         name:
             ja:"ハリボテ"
             en:"haribote"

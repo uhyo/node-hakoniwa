@@ -175,10 +175,20 @@ describe 'Effects',->
             landarea.get(5,5).is(lands.Waste).should.be.true
             (new effects.Damage "eruption-edge").on landarea.get 5,5
             landarea.get(5,5).is(lands.Waste).should.be.true
+
+            landarea.set 5,5,new lands.Town
+            (new effects.Damage "eruption-edge").on landarea.get 5,5
+            landarea.get(5,5).is(lands.Waste).should.be.true
         describe 'earthquake',->
             dm=new effects.Damage "earthquake"
-            it 'on Town',->
+            it 'on small Town',->
                 landarea.set 5,5,new lands.Town
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Town).should.be.true
+            it 'on Town',->
+                town=new lands.Town
+                town.population=150
+                landarea.set 5,5,town
                 dm.on landarea.get 5,5
                 landarea.get(5,5).is(lands.Waste).should.be.true
             it 'on Haribote',->
@@ -193,6 +203,37 @@ describe 'Effects',->
                 landarea.set 5,5,new lands.Plains
                 dm.on landarea.get 5,5
                 landarea.get(5,5).is(lands.Plains).should.be.true
+        describe 'tsunami',->
+            dm=new effects.Damage "tsunami"
+            it 'on town',->
+                landarea.set 5,5,new lands.Town
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'on farm',->
+                landarea.set 5,5,new lands.Farm
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'on Haribote',->
+                landarea.set 5,5,new lands.Haribote
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'on Factory',->
+                landarea.set 5,5,new lands.Factory
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'on LandBase',->
+                landarea.set 5,5,new lands.LandBase
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'on Defence',->
+                landarea.set 5,5,new lands.Defence
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it 'others',->
+                landarea.set 5,5,new lands.Plains
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Plains).should.be.true
+
 
 
 

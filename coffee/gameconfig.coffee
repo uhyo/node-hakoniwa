@@ -28,3 +28,7 @@ module.exports=
         earthquake:
             # 個々のヘックスがダメージを受ける確率
             damageProb:250
+        # 津波
+        tsunami:
+            # 個々のヘックスがダメージが受けるかどうかの判定用ダイス
+            damageDice:12

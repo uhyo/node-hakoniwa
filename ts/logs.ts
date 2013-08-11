@@ -118,6 +118,31 @@ export class EarthquakeDamage extends Damage{
 		en:"the earthquake",
 	};
 }
+//津波
+export class TsunamiOccurrence extends DisasterLog{
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.disaster("A tsunami")+" struck "+this.islandname()+"!!";
+			default:
+				return this.islandname()+"付近で"+this.disaster("津波")+"発生！！";
+		}
+	}
+
+}
+export class TsunamiDamage extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return "The "+this.hex(this.dhex)+" at "+this.position(this.pos)+" was destroyed due to "+this.disaster("the tsunami")+".";
+			default:
+				return this.position(this.pos)+"の"+this.hex(this.dhex)+"は"+this.disaster("津波")+"により崩壊しました。";
+		}
+	}
+}
 
 //=== HTML funcs
 module html{
