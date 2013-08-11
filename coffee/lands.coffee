@@ -120,6 +120,7 @@ class Hex
     isTown:->false  # 街系地形（人口あり）かどうか
     isBase:->false  # ミサイル基地かどうか
     isMountain:->false # 山かどうか
+    isForest:->false # 森かどうか
     # 一致 コンストラクタをわたして
     is:(con)->this instanceof con
     # clone:自分をコピー
@@ -192,6 +193,14 @@ class TsunamiVulnerable
                 e.appendLog new logs.TsunamiDamage @position,@clone()
         else
             _super()
+class TyphoonVulnerable
+    damage:(_super,type)->
+        if type=='typhoon'
+            @change lands.Plains,(e)=>
+                e.appendLog new logs.TyphoonDamage @position,@clone()
+        else
+            _super()
+
 
 lands=
     Hex:Hex
@@ -336,6 +345,7 @@ lands=
             ja:"森"
             en:"forest"
         maxValue:200
+        isForest:->true
         grow:->
             if @value<@maxValue
                 @value+=1
@@ -347,7 +357,7 @@ lands=
             }
         turnProcess:->@grow()
     # 農場
-    Farm:class extends multi TsunamiVulnerable,Hex
+    Farm:class extends multi TyphoonVulnerable,TsunamiVulnerable,Hex
         constructor:->
             super
             @quantity=0
@@ -523,7 +533,7 @@ lands=
                     title:@getName lang
                     desc:""
                 }
-    Haribote:class extends multi TsunamiVulnerable,EarthquakeVulnerable,Hex
+    Haribote:class extends multi TyphoonVulnerable,TsunamiVulnerable,EarthquakeVulnerable,Hex
         name:
             ja:"ハリボテ"
             en:"haribote"

@@ -233,6 +233,20 @@ describe 'Effects',->
                 landarea.set 5,5,new lands.Plains
                 dm.on landarea.get 5,5
                 landarea.get(5,5).is(lands.Plains).should.be.true
+        describe 'typhoon',->
+            dm=new effects.Damage "typhoon"
+            it 'on farm',->
+                landarea.set 5,5,new lands.Farm
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Plains).should.be.true
+            it 'on Haribote',->
+                landarea.set 5,5,new lands.Haribote
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Plains).should.be.true
+            it 'others',->
+                landarea.set 5,5,new lands.Town
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Town).should.be.true
 
 
 

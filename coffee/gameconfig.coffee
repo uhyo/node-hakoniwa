@@ -32,3 +32,6 @@ module.exports=
         tsunami:
             # 個々のヘックスがダメージが受けるかどうかの判定用ダイス
             damageDice:12
+        typhoon:
+            # 個々のヘックスがダメージが受けるかどうかの判定用ダイス
+            damageDice:12

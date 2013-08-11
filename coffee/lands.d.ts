@@ -22,6 +22,7 @@ export declare class Hex{
 	isSea():bool;
 	isTown():bool;
 	isBase():bool;
+	isForest():bool;
 	//一致
 	is(con:new()=>Hex):bool;
 	clone():Hex;

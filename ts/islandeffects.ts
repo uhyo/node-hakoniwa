@@ -109,3 +109,24 @@ export class Tsunami extends Disaster{
 		});
 	}
 }
+export class Typhoon extends Disaster{
+	damagedice:number=gameconfig.disaster.typhoon.damageDice;
+
+	on(island:islands.Island):void{
+		super.on(island);
+		//発生ログ
+		island.addLog(new logs.TyphoonOccurrence());
+		//各ヘックスについて
+		var land=island.land;
+		var damage=new effects.Damage("typhoon");
+		land.randomPositions().forEach((pos)=>{
+			//周囲の森の数を数えて1d12以下で崩壊
+			var fos=land.countAround(pos,1,(hex)=>{
+				return hex.isForest();
+			});
+			if(util.probb(fos,this.damagedice)){
+				damage.on(land.get(pos));
+			}
+		});
+	}
+}

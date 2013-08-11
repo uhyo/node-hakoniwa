@@ -143,6 +143,31 @@ export class TsunamiDamage extends DisasterLog{
 		}
 	}
 }
+//台風
+export class TyphoonOccurrence extends DisasterLog{
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.disaster("A typhoon")+" struck "+this.islandname()+"!!";
+			default:
+				return this.islandname()+"に"+this.disaster("台風")+"上陸！！";
+		}
+	}
+
+}
+export class TyphoonDamage extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return "The "+this.hex(this.dhex)+" at "+this.position(this.pos)+" was blown off by "+this.disaster("the typhoon")+".";
+			default:
+				return this.position(this.pos)+"の"+this.hex(this.dhex)+"は"+this.disaster("台風")+"で吹き飛ばされました。";
+		}
+	}
+}
 
 //=== HTML funcs
 module html{
