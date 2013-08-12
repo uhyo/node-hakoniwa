@@ -247,6 +247,54 @@ describe 'Effects',->
                 landarea.set 5,5,new lands.Town
                 dm.on landarea.get 5,5
                 landarea.get(5,5).is(lands.Town).should.be.true
+        describe 'widedamage',->
+            describe 'crator',->
+                dm=new effects.Damage "widedamage-crator"
+                it 'on shoal',->
+                    landarea.set 5,5,new lands.Shoal
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.Sea).should.be.true
+                it 'on SeaBase',->
+                    landarea.set 5,5,new lands.SeaBase
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.Sea).should.be.true
+                it 'others',->
+                    landarea.set 5,5,new lands.Town
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.Sea).should.be.true
+            describe 'edge1',->
+                dm=new effects.Damage "widedamage-edge1"
+                it 'on shoal',->
+                    landarea.set 5,5,new lands.Shoal
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.Sea).should.be.true
+                it 'on SeaBase',->
+                    landarea.set 5,5,new lands.SeaBase
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.Sea).should.be.true
+                it 'others',->
+                    landarea.set 5,5,new lands.Mountain
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.Shoal).should.be.true
+            describe 'edge2',->
+                dm=new effects.Damage "widedamage-edge2"
+                it 'on SeaBase',->
+                    landarea.set 5,5,new lands.SeaBase
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.SeaBase).should.be.true
+                it 'on oil',->
+                    landarea.set 5,5,new lands.OffshoreOilfield
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.OffshoreOilfield).should.be.true
+                it 'on Mountain',->
+                    landarea.set 5,5,new lands.Mountain
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.Mountain).should.be.true
+                it 'others',->
+                    landarea.set 5,5,new lands.Factory
+                    dm.on landarea.get 5,5
+                    landarea.get(5,5).is(lands.Waste).should.be.true
+
 
 
 

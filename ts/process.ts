@@ -12,6 +12,7 @@ export class Process{
 		//今はダミーデータを作るといいんじゃ?
 		this.islandsdata["1"]=islands.makeNewIsland();
 		this.islandsdata["1"].metadata.name="テス島";
+		(new islandeffects.HugeMeteorite(new islands.Position(6,6))).on(this.islandsdata["1"]);
 	}
 	sight(id:string,callback:(err:any,html:string)=>void):void{
 		var island=this.islandsdata[id];
@@ -19,7 +20,6 @@ export class Process{
 			callback(new Error("その島はありません"),null);
 			return;
 		}
-		(new islandeffects.Tsunami).on(island);
 		callback(null,island.html("ja",false));
 	}
 }

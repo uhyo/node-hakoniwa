@@ -113,6 +113,18 @@ class Hex
                 # 荒地になる
                 @change lands.Waste,(e)=>
                     e.appendLog new logs.EruptionDamage @position,@clone()
+            when "widedamage-crator"
+                # 海に沈む
+                @change lands.Sea,(e)=>
+                    e.appendLog new logs.WideDamageSea @position,@clone()
+            when "widedamage-edge1"
+                # 浅瀬になる
+                @change lands.Shoal,(e)=>
+                    e.appendLog new logs.WideDamageSea @position,@clone()
+            when "widedamage-edge2"
+                # 荒地になる
+                @change lands.Waste,(e)=>
+                    e.appendLog new logs.WideDamageWaste @position,@clone()
 
     # 地形フラグ
     isLand:->true   # 陸かどうか
@@ -244,6 +256,9 @@ lands=
                 when "eruption-edge"
                     @change lands.Waste,(e)=>
                         e.appendLog new logs.EruptionShoal @position,@clone()
+                when "widedamage-crator","widedamage-edge1"
+                    # 音もなく沈む
+                    @change lands.Sea
         isLand:->false
         isSea:->true
         html:(lang)->
@@ -428,6 +443,9 @@ lands=
             en:"mountain"
         damage:(type)->
             # 山はダメージを受けにくい
+            switch type
+                when "widedamage-crator","widedamage-edge1"
+                    super
         isMountain:->true
         html:(lang)->
             @rawhtml {
@@ -460,6 +478,13 @@ lands=
         name:
             ja:"海底基地"
             en:"undersea missile base"
+        damage:(type)->
+            # 水没するときはログが出る
+            if type in ["widedamage-crator","widedamage-edge1"]
+                @change lands.Sea,(e)=>
+                    e.appendLog new logs.WideDamageSea2 @position,@clone()
+            else
+                super
         html:(lang,owner)->
             if gameconfig.base.hide && !owner
                 @rawhtml {
@@ -481,6 +506,13 @@ lands=
         turnProcess:->
             if @island?
                 (new islandeffects.GainMoney @oilPrice).on @island
+        damage:(type)->
+            # 水没するときはログが出る
+            if type in ["widedamage-crator","widedamage-edge1"]
+                @change lands.Sea,(e)=>
+                    e.appendLog new logs.WideDamageSea2 @position,@clone()
+            else
+                super
         html:(lang)->
             @rawhtml {
                 src:"land16,gif"

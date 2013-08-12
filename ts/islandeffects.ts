@@ -109,6 +109,7 @@ export class Tsunami extends Disaster{
 		});
 	}
 }
+//台風
 export class Typhoon extends Disaster{
 	damagedice:number=gameconfig.disaster.typhoon.damageDice;
 
@@ -128,5 +129,34 @@ export class Typhoon extends Disaster{
 				damage.on(land.get(pos));
 			}
 		});
+	}
+}
+//広域被害
+export class WideDamage extends Disaster{
+	//protected
+	constructor(public pos:islands.Position){
+		super();
+	}
+	damage(island:islands.Island):void{
+		var land=island.land;
+		//中心の被害
+		(new effects.Damage("widedamage-crator")).on(land.get(this.pos));
+		//周辺の被害
+		var edge1=new effects.Damage("widedamage-edge1"),edge2=new effects.Damage("widedamage-edge2");
+		land.ringAround(1).fromEach(this.pos).forEach((pos)=>{
+			edge1.on(land.get(pos));
+		});
+		land.ringAround(2).fromEach(this.pos).forEach((pos)=>{
+			edge2.on(land.get(pos));
+		});
+	}
+}
+//巨大隕石
+export class HugeMeteorite extends WideDamage{
+	on(island:islands.Island):void{
+		super.on(island);
+		//発生ログ
+		island.addLog(new logs.HugeMeteorite(this.pos));
+		this.damage(island);
 	}
 }

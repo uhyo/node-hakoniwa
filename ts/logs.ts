@@ -169,6 +169,64 @@ export class TyphoonDamage extends DisasterLog{
 	}
 }
 
+//広域被害
+//海に沈む
+export class WideDamageSea extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return "The "+this.hex(this.dhex)+" at "+this.position(this.pos)+" was submerged.";
+			default:
+				return this.position(this.pos)+"の"+this.hex(this.dhex)+"は"+this.keyword("水没")+"しました。";
+		}
+	}
+}
+
+//海の施設がやられる
+export class WideDamageSea2 extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return "The "+this.hex(this.dhex)+" at "+this.position(this.pos)+" vanished.";
+			default:
+				return this.position(this.pos)+"の"+this.hex(this.dhex)+"は跡形もなくなりました。";
+		}
+	}
+}
+//荒地になる
+export class WideDamageWaste extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return "The "+this.hex(this.dhex)+" at "+this.position(this.pos)+" was ruined outright.";
+			default:
+				return this.position(this.pos)+"の"+this.hex(this.dhex)+"は一瞬にして"+this.keyword("荒地")+"と化しました。";
+		}
+	}
+}
+export class HugeMeteorite extends DisasterLog{
+	constructor(private pos:islands.Position){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.disaster("A huge meteorite")+" falled at "+this.position(this.pos)+"!!";
+			default:
+				return this.position(this.pos)+"地点で"+this.disaster("巨大隕石")+"が落下！！";
+		}
+	}
+}
+
 //=== HTML funcs
 module html{
 	export function position(posstr:string):string{
