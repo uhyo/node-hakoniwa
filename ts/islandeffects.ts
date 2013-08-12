@@ -160,3 +160,12 @@ export class HugeMeteorite extends WideDamage{
 		this.damage(island);
 	}
 }
+//隕石一つ
+export class Meteorite extends Disaster{
+	constructor(public pos:islands.Position){
+		super();
+	}
+	on(island:islands.Island):void{
+		(new effects.Damage("meteorite")).on(island.land.get(this.pos));
+	}
+}

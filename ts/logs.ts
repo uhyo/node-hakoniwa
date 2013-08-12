@@ -226,6 +226,75 @@ export class HugeMeteorite extends DisasterLog{
 		}
 	}
 }
+//隕石
+export class MeteoriteNormal extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.disaster("A meteorite")+" fell to the "+this.hex(this.dhex)+" at "+this.position(this.pos)+" and submerged it.";
+			default:
+				return this.position(this.pos)+"地点の"+this.hex(this.dhex)+"に"+this.disaster("隕石")+"が落下、一帯が水没しました。";
+		}
+	}
+}
+export class MeteoriteMountain extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.disaster("A meteorite")+" fell to the "+this.hex(this.dhex)+" at "+this.position(this.pos)+" and the "+this.hex(this.dhex)+" vanished.";
+			default:
+				return this.position(this.pos)+"地点の"+this.hex(this.dhex)+"に"+this.disaster("隕石")+"が落下、"+this.hex(this.dhex)+"は消し飛びました。";
+		}
+	}
+}
+//水中施設を破壊
+export class MeteoriteUnderSea extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.disaster("A meteorite")+" fell to the "+this.hex(this.dhex)+" at "+this.position(this.pos)+" and the "+this.hex(this.dhex)+" broke down.";
+			default:
+				return this.position(this.pos)+"地点の"+this.hex(this.dhex)+"に"+this.disaster("隕石")+"が落下、"+this.hex(this.dhex)+"は崩壊しました。";
+		}
+	}
+}
+//浅瀬を破壊
+export class MeteoriteShoal extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.disaster("A meteorite")+" fell to the "+this.hex(this.dhex)+" at "+this.position(this.pos)+" and the area was deepened.";
+			default:
+				return this.position(this.pos)+"地点の"+this.hex(this.dhex)+"に"+this.disaster("隕石")+"が落下、海底がえぐられました。";
+		}
+	}
+}
+//海ポチャ
+export class MeteoriteSea extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.disaster("A meteorite")+" fell to the "+this.hex(this.dhex)+" at "+this.position(this.pos)+".";
+			default:
+				return this.position(this.pos)+"地点の"+this.hex(this.dhex)+"に"+this.disaster("隕石")+"が落下しました。";
+		}
+	}
+}
 
 //=== HTML funcs
 module html{

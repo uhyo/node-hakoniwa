@@ -125,6 +125,10 @@ class Hex
                 # 荒地になる
                 @change lands.Waste,(e)=>
                     e.appendLog new logs.WideDamageWaste @position,@clone()
+            when "meteorite"
+                # ふつうに沈む
+                @change lands.Sea,(e)=>
+                    e.appendLog new logs.MeteoriteNormal @position,@clone()
 
     # 地形フラグ
     isLand:->true   # 陸かどうか
@@ -234,6 +238,9 @@ lands=
                     # 周囲1Hex
                     @change lands.Shoal,(e)=>
                         e.appendLog new logs.EruptionSea @position,@clone()
+                when "meteorite"
+                    # ログだけだす
+                    @island.addLog new logs.MeteoriteSea @position,@clone()
         isLand:->false
         isSea:->true
         html:(lang)->
@@ -259,6 +266,10 @@ lands=
                 when "widedamage-crator","widedamage-edge1"
                     # 音もなく沈む
                     @change lands.Sea
+                when "meteorite"
+                    #  えぐられる
+                    @change lands.Sea,(e)=>
+                        e.appendLog new logs.MeteoriteShoal @position,@clone()
         isLand:->false
         isSea:->true
         html:(lang)->
@@ -446,6 +457,10 @@ lands=
             switch type
                 when "widedamage-crator","widedamage-edge1"
                     super
+                when "meteorite"
+                    # 隕石に破壊される
+                    @change lands.Waste,(e)=>
+                        e.appendLog new logs.MeteoriteMountain @position,@clone()
         isMountain:->true
         html:(lang)->
             @rawhtml {
@@ -480,11 +495,15 @@ lands=
             en:"undersea missile base"
         damage:(type)->
             # 水没するときはログが出る
-            if type in ["widedamage-crator","widedamage-edge1"]
-                @change lands.Sea,(e)=>
-                    e.appendLog new logs.WideDamageSea2 @position,@clone()
-            else
-                super
+            switch type
+                when "widedamage-crator","widedamage-edge1"
+                    @change lands.Sea,(e)=>
+                        e.appendLog new logs.WideDamageSea2 @position,@clone()
+                when "meteorite"
+                    @change lands.Sea,(e)=>
+                        e.appendLog new logs.MeteoriteUnderSea @position,@clone()
+                else
+                    super
         html:(lang,owner)->
             if gameconfig.base.hide && !owner
                 @rawhtml {

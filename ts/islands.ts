@@ -211,6 +211,7 @@ export class LandArea{
 		}
 		return result;
 	}
+	//ランダムな順番で全部列挙
 	randomPositions():Position[]{
 		//まず全部列挙
 		var result=[];
@@ -220,6 +221,10 @@ export class LandArea{
 			}
 		}
 		return util.shufflE(result);
+	}
+	//1つ適当な位置を指定
+	randomPosition():Position{
+		return new Position(util.random(this.width),util.random(this.height));
 	}
 }
 export function makeNewIsland():Island{

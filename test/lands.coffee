@@ -294,6 +294,20 @@ describe 'Effects',->
                     landarea.set 5,5,new lands.Factory
                     dm.on landarea.get 5,5
                     landarea.get(5,5).is(lands.Waste).should.be.true
+        describe 'meteorite',->
+            dm=new effects.Damage "meteorite"
+            it ' on mountain',->
+                landarea.set 5,5,new lands.Mountain
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Waste).should.be.true
+            it ' on seabase',->
+                landarea.set 5,5,new lands.SeaBase
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Sea).should.be.true
+            it 'others',->
+                landarea.set 5,5,new lands.Town
+                dm.on landarea.get 5,5
+                landarea.get(5,5).is(lands.Sea).should.be.true
 
 
 
