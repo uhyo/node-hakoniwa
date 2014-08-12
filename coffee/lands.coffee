@@ -403,7 +403,7 @@ lands=
             @rawhtml {
                 src:"land7.gif"
                 title:@getName lang
-                desc:"#{@quantity}0#{gameconfig.unit.population}規模"
+                desc:"#{@quantity}#{gameconfig.unit.population}規模"
             }
         estimate:(status)->
             status.farm+=@quantity
@@ -421,7 +421,7 @@ lands=
             @rawhtml {
                 src:"land8.gif"
                 title:@getName lang
-                desc:"#{@quantity}0#{gameconfig.unit.population}規模"
+                desc:"#{@quantity}#{gameconfig.unit.population}規模"
             }
         estimate:(status)->
             status.factory+=@quantity
@@ -494,7 +494,7 @@ lands=
             @rawhtml {
                 src:"land15.gif"
                 title:@getName lang
-                desc:"#{@quantity}0#{gameconfig.util.population}規模"
+                desc:"#{@quantity}#{gameconfig.util.population}規模"
             }
         estimate:(status)->
             status.mountain+=@quantity

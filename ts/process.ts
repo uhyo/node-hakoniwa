@@ -1,12 +1,11 @@
+import turn=require('./turn');
 import islands=require('./islands');
 import lands=require('../coffee/lands');
 
 import islandeffects=require('./islandeffects');
 
 export class Process{
-	private islandsdata:{
-		[id:string]:islands.Island;
-	};
+	private islandsdata:turn.IslandsDict;
 	constructor(){
 		this.islandsdata={};
 		//今はダミーデータを作るといいんじゃ?
@@ -22,4 +21,8 @@ export class Process{
 		(new islandeffects.Subsidence()).on(island);
 		callback(null,island.html("ja",false));
 	}
+    //イテレータを返す
+    getIterator():turn.IslandsIterator{
+        return new turn.IslandsIterator(this.islandsdata);
+    }
 }
