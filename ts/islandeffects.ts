@@ -1,10 +1,10 @@
 declare var require:(path:string)=>any;
 var gameconfig=require('../coffee/gameconfig');
 
-import islands=module("./islands");
-import effects=module("../coffee/effects");
-import util=module("./util");
-import logs=module("./logs");
+import islands=require("./islands");
+import effects=require("../coffee/effects");
+import util=require("./util");
+import logs=require("./logs");
 
 export class IslandEffect{
 	private logs:logs.Log[];
@@ -162,10 +162,29 @@ export class HugeMeteorite extends WideDamage{
 }
 //隕石一つ
 export class Meteorite extends Disaster{
-	constructor(public pos:islands.Position){
+	constructor(private pos:islands.Position){
 		super();
 	}
 	on(island:islands.Island):void{
 		(new effects.Damage("meteorite")).on(island.land.get(this.pos));
+	}
+}
+//地盤沈下
+export class Subsidence extends Disaster{
+	on(island:islands.Island){
+		super.on(island);
+		//発生ログ
+		island.addLog(new logs.SubsidenceOccurrence());
+		//各ヘックスについて
+		var land=island.land;
+		var damage=new effects.Damage("subside");
+		land.randomPositions().filter((pos)=>{
+			// 海に面したところを沈める
+			return land.countAround(pos,1,(hex)=>{
+				return hex.isSea();
+			})>0;
+		}).forEach((pos)=>{
+			damage.on(land.get(pos));
+		});
 	}
 }

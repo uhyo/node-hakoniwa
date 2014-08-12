@@ -1,6 +1,6 @@
-import lands=module('./lands');
-import logs=module('../ts/logs');
-import islands=module('../ts/islands');
+import lands=require('./lands');
+import logs=require('../ts/logs');
+import islands=require('../ts/islands');
 export declare class Effect{
 	private logs:logs.Log;
 	constructor();

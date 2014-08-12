@@ -1,6 +1,10 @@
-import lands=module("../coffee/lands");
-import islands=module("islands");
+import lands=require("../coffee/lands");
+import islands=require("islands");
 
+//多言語対応
+export interface LocalizedObject{
+    [index:string]:string;
+}
 
 // ログ
 export class Log{
@@ -39,7 +43,7 @@ export class DisasterLog extends Log{
 // とりあえず壊滅する
 export class Damage extends DisasterLog{
 	//protected
-	public source:{[index:string]:string;};
+	public source:LocalizedObject;
 	constructor(private pos:islands.Position,private dhex:lands.Hex){
 		super();
 	}
@@ -95,7 +99,7 @@ export class EruptionShoal extends DisasterLog{
 	}
 }
 export class EruptionDamage extends Damage{
-	public source={
+	public source=<LocalizedObject>{
 		ja:"噴火",
 		en:"the eruption",
 	};
@@ -113,7 +117,7 @@ export class EarthquakeOccurrence extends DisasterLog{
 
 }
 export class EarthquakeDamage extends Damage{
-	public source={
+	public source=<LocalizedObject>{
 		ja:"地震",
 		en:"the earthquake",
 	};
@@ -292,6 +296,30 @@ export class MeteoriteSea extends DisasterLog{
 				return this.disaster("A meteorite")+" fell to the "+this.hex(this.dhex)+" at "+this.position(this.pos)+".";
 			default:
 				return this.position(this.pos)+"地点の"+this.hex(this.dhex)+"に"+this.disaster("隕石")+"が落下しました。";
+		}
+	}
+}
+//地盤沈下
+export class SubsidenceOccurrence extends DisasterLog{
+	html():string{
+		switch(this.lang){
+			case "en":
+				return this.islandname()+" started to "+this.disaster("sink")+"!!";
+			default:
+				return this.islandname()+"で"+this.disaster("地盤沈下")+"が発生しました！！";
+		}
+	}
+}
+export class SubsideLand extends DisasterLog{
+	constructor(private pos:islands.Position,private dhex:lands.Hex){
+		super();
+	}
+	html():string{
+		switch(this.lang){
+			case "en":
+				return "The "+this.hex(this.dhex)+" at "+this.position(this.pos)+" sunk into the sea.";
+			default:
+				return this.position(this.pos)+"の"+this.hex(this.dhex)+"は海の中へ沈みました。";
 		}
 	}
 }

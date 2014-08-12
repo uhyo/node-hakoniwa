@@ -1,8 +1,8 @@
 declare function require(path:string):any;
 var gameconfig=require("../coffee/gameconfig");
-import lands=module("../coffee/lands");
-import util=module("./util");
-import logs=module("./logs");
+import lands=require("../coffee/lands");
+import util=require("./util");
+import logs=require("./logs");
 //座標オブジェクト
 export class Position{
 	constructor(public x:number,public y:number){
@@ -24,6 +24,34 @@ export class IslandMetadata{
 		return result;
 	}
 }
+//島の各種パラメータ（estimateで算出されるもの）
+export class IslandStatus{
+    constructor(private island:Island){
+        this.reset();
+    }
+    public population:number;  //人口
+    public area:number; //面積
+    public farm:number; //農場
+    public factory:number;  //工場
+    public mountain:number; //採掘場
+    //カウント前の状態に戻す
+    reset():void{
+        this.population=0;
+        this.area=0;
+        this.farm=0;
+        this.factory=0;
+        this.mountain=0;
+    }
+    clone():IslandStatus{
+        var result=new IslandStatus(this.island);
+        result.population=this.population;
+        result.area=this.area;
+        result.farm=this.farm;
+        result.factory=this.factory;
+        result.mountain=this.mountain;
+        return result;
+    }
+}
 
 export class Island{
 	public land:LandArea;
@@ -31,6 +59,7 @@ export class Island{
 	public money:number;
 
 	public metadata:IslandMetadata;
+    public status:IslandStatus;
 
 	//まだDB入りしていない系のログだ!
 	private logs:logs.Log[];
@@ -42,8 +71,9 @@ export class Island{
 		this.money=gameconfig.owings.initialMoney;
 		this.logs=[];
 		this.metadata=new IslandMetadata(this);
+        this.status=new IslandStatus(this);
 	}
-	html(lang:string,owner:bool):string{
+	html(lang:string,owner:boolean):string{
 		//すごく暫定的
 		return this.land.html(lang,owner)+this.logs.map((log)=>{
 			return "<p>"+log.html()+"</p>"
@@ -108,7 +138,7 @@ export class LandArea{
 		}
 		return this.land[y][x];
 	}
-	html(lang:string,owner:bool):string{
+	html(lang:string,owner:boolean):string{
 		return this.land.map(function(row){
 			return row.map(function(hex){
 				return hex.html(lang,owner);
@@ -120,7 +150,7 @@ export class LandArea{
 		}).join("\n");
 	}
 	//判定
-	inArea(pos:Position):bool{
+	inArea(pos:Position):boolean{
 		return 0<=pos.x && pos.x<this.width && 0<=pos.y && pos.y<this.height;
 	}
 	//カウントするぞーーーーーーーー
@@ -177,8 +207,8 @@ export class LandArea{
 	}
 	countAround(x:number,y:number,distance:number,constr:new()=>lands.Hex):number;
 	countAround(pos:Position,distance:number,constr:new()=>lands.Hex):number;
-	countAround(x:number,y:number,distance:number,func:(hex:lands.Hex)=>bool):number;
-	countAround(pos:Position,distance:number,func:(hex:lands.Hex)=>bool):number;
+	countAround(x:number,y:number,distance:number,func:(hex:lands.Hex)=>boolean):number;
+	countAround(pos:Position,distance:number,func:(hex:lands.Hex)=>boolean):number;
 	countAround(arg1:any,arg2:any,arg3:any,arg4?:any):number{
 		var pos:Position, distance:number, cond:any;
 		if(arg1 instanceof Position){
@@ -300,7 +330,7 @@ export function makeNewIsland():Island{
 }
 //-----------------------------
 export interface RouteFlags{
-	[index:string]:bool;	//(0,0)から行き先のPosition#toString()したところにtrue
+	[index:string]:boolean;	//(0,0)から行き先のPosition#toString()したところにtrue
 }
 //移動を定義する
 export class Route{

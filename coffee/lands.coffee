@@ -95,6 +95,8 @@ class Hex
 
     # ターン処理
     turnProcess:->
+    # 集計処理
+    estimate:(status)->
     # 変化する
     change:(hex,optfunc)->
         eff=new effects.ChangeHex hex
@@ -129,6 +131,10 @@ class Hex
                 # ふつうに沈む
                 @change lands.Sea,(e)=>
                     e.appendLog new logs.MeteoriteNormal @position,@clone()
+            when "subside"
+                # だいたいは浅瀬になる
+                @change lands.Shoal,(e)=>
+                    e.appendLog new logs.SubsideLand @position,@clone()
 
     # 地形フラグ
     isLand:->true   # 陸かどうか
@@ -150,8 +156,8 @@ class Hex
 # 基本的地形
 # 成長する地形
 class Growable extends Hex
-    grow:->
-    shrink:->
+    grow:()->
+    shrink:()->
 # 居住地形
 class Ecumene extends Growable
     constructor:->
@@ -162,7 +168,7 @@ class Ecumene extends Growable
     growrate:10
     growrate2:0
     shrinkrate:30
-    grow:->
+    grow:()->
         if @population<@borderPopulation
             # よく成長する
             @population+=util.random(@growrate)+1
@@ -173,12 +179,15 @@ class Ecumene extends Growable
             @population+=util.random(@growrate2)+1
         if @population>@maxPopulation
             @population=@maxPopulation
-    shrink:->
+    shrink:()->
         @population-=util.random(@shrinkrate)+1
         if @population<=0
             (new effects.ChangeHex(lands.Plains)).on this
-    turnProcess:->
+    turnProcess:()->
         @grow()
+    estimate:(status)->
+        # 人口をカウントする
+        status.population+=@population
 
 #=================--- mixin用
 # ミサイル基地
@@ -263,7 +272,7 @@ lands=
                 when "eruption-edge"
                     @change lands.Waste,(e)=>
                         e.appendLog new logs.EruptionShoal @position,@clone()
-                when "widedamage-crator","widedamage-edge1"
+                when "widedamage-crator","widedamage-edge1","subside"
                     # 音もなく沈む
                     @change lands.Sea
                 when "meteorite"
@@ -396,6 +405,8 @@ lands=
                 title:@getName lang
                 desc:"#{@quantity}0#{gameconfig.unit.population}規模"
             }
+        estimate:(status)->
+            status.farm+=@quantity
     # 工場
     Factory:class extends multi TsunamiVulnerable,EarthquakeVulnerable,Hex
         constructor:->
@@ -412,6 +423,8 @@ lands=
                 title:@getName lang
                 desc:"#{@quantity}0#{gameconfig.unit.population}規模"
             }
+        estimate:(status)->
+            status.factory+=@quantity
     # ミサイル基地
     LandBase:class extends multi TsunamiVulnerable,Base,Hex
         constructor:->
@@ -483,6 +496,8 @@ lands=
                 title:@getName lang
                 desc:"#{@quantity}0#{gameconfig.util.population}規模"
             }
+        estimate:(status)->
+            status.mountain+=@quantity
     # ミサイル基地
     #SeaBase:class extends multi Sea,Base
     SeaBase:class extends multi Base,Sea

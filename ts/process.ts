@@ -1,7 +1,7 @@
-import islands=module('./islands');
-import lands=module('../coffee/lands');
+import islands=require('./islands');
+import lands=require('../coffee/lands');
 
-import islandeffects=module('./islandeffects');
+import islandeffects=require('./islandeffects');
 
 export class Process{
 	private islandsdata:{
@@ -19,7 +19,7 @@ export class Process{
 			callback(new Error("その島はありません"),null);
 			return;
 		}
-		(new islandeffects.Meteorite(island.land.randomPosition())).on(island);
+		(new islandeffects.Subsidence()).on(island);
 		callback(null,island.html("ja",false));
 	}
 }

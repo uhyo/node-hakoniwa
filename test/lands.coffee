@@ -15,6 +15,9 @@ initArea=->
     landarea
 initIsland=->
     islands.makeNewIsland()
+initStatus=->
+    island=initIsland()
+    return new islands.IslandStatus island
 
 describe 'countAround',->
     landarea=null
@@ -107,6 +110,12 @@ describe 'Hex',->
                 (new effects.Grow).on town
                 town.grow()
                 town.population.should.be.eql 120
+            it 'should estimate population',->
+                status=initStatus()
+                status.population.should.be.eql 0
+                town.population=120
+                town.estimate status
+                status.population.should.be.eql 120
     describe 'Plains',->
         landarea=null
         plains=null
@@ -145,6 +154,36 @@ describe 'Hex',->
             forest.value=12
             forest.turnProcess()
             forest.value.should.eql 13
+    describe 'Farm',->
+        farm=null
+        beforeEach ->
+            farm=new lands.Farm
+        it 'should estimate',->
+            status=initStatus()
+            status.farm.should.be.eql 0
+            farm.quantity=50
+            farm.estimate status
+            status.farm.should.be.eql 50
+    describe 'Factory',->
+        factory=null
+        beforeEach ->
+            factory=new lands.Factory
+        it 'should estimate',->
+            status=initStatus()
+            status.factory.should.be.eql 0
+            factory.quantity=50
+            factory.estimate status
+            status.factory.should.be.eql 50
+    describe 'Mine',->
+        mine=null
+        beforeEach ->
+            mine=new lands.Mine
+        it 'should estimate',->
+            status=initStatus()
+            status.mountain.should.be.eql 0
+            mine.quantity=50
+            mine.estimate status
+            status.mountain.should.be.eql 50
     describe 'OffshoreOilfield',->
         oil=null
         beforeEach ->

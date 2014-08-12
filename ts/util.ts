@@ -15,11 +15,11 @@ export function rand(n:number,...ns:number[]):number{
 	return l;
 }
 //確率判定して返す p:0〜1
-export function prob(p:number):bool{
+export function prob(p:number):boolean{
 	return Math.random()<p;
 }
 //整数版p:0〜n
-export function probb(p:number,n:number):bool{
+export function probb(p:number,n:number):boolean{
 	return prob(p/n);
 }
 //配列シャッフル(破壊的)
